@@ -11,5 +11,5 @@ go-hn --help
 
 ### Todo
 
-* Extract application configuration code from `main()` and add unit tests.
+* Add unit tests for `lib/config`.
 * Extract output printing code from `main()` and unit test the output.
