@@ -62,7 +62,12 @@ func main() {
 	stories := GetTopStories(client)
 	item := client.GetItem(stories[0])
 
-	fmt.Printf("%d) %s (%s) -- %s\n", item.Id, item.Title, item.Url, time.Unix(item.TimeRaw, 0))
+	fmt.Printf(item.String())
+}
+
+func (item *HNItem) String() string {
+
+	return fmt.Sprintf("%d) %s (%s) -- %s\n", item.Id, item.Title, item.Url, time.Unix(item.TimeRaw, 0).UTC())
 }
 
 func GetTopStories(client *Client) []int {

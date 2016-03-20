@@ -45,6 +45,7 @@ func apiError(text string) *fakeResponse {
 }
 
 func testJsonClient(t *testing.T, expected *expectedRequest, response *fakeResponse) (*httptest.Server, *Client) {
+
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(response.code)
 		w.Header().Set("Content-Type", response.contentType)
@@ -70,6 +71,7 @@ func testJsonClient(t *testing.T, expected *expectedRequest, response *fakeRespo
 }
 
 func expectPanic(t *testing.T, panicErrorContains string) {
+
 	r := recover()
 	if r == nil {
 		t.Errorf("The code did not panic")
@@ -115,7 +117,8 @@ func Test_GetTopStories_ApiFailure(t *testing.T) {
 }
 
 func Test_GetItem_Success(t *testing.T) {
-	server, client := testJsonClient(t, &expectedRequest{"GET", "/item/666.json"}, ok(`{"id": 666, "title": "Good news!"}`))
+
+	server, client := testJsonClient(t, &expectedRequest{"GET", "/item/666.json"}, ok(`{"id": 666, "title": "Good news!", "time": 1458509499}`))
 	defer server.Close()
 
 	result := client.GetItem(666)
@@ -123,5 +126,25 @@ func Test_GetItem_Success(t *testing.T) {
 	assert.Equal(t, &HNItem{
 		Id: 666,
 		Title: "Good news!",
+		TimeRaw: 1458509499,
 	}, result)
+}
+
+func Test_HNItem_String(t *testing.T) {
+
+	item := &HNItem{
+		Id: 666,
+		Title: "Good news!",
+		Url: "http://article.location",
+		TimeRaw: 1458509499,
+	}
+
+	assert.Equal(t, "666) Good news! (http://article.location) -- 2016-03-20 21:31:39 +0000 UTC\n", item.String())
+}
+
+func Test_HNItem_EmptyString(t *testing.T) {
+
+	item := &HNItem{}
+
+	assert.Equal(t, "0)  () -- 1970-01-01 00:00:00 +0000 UTC\n", item.String())
 }
