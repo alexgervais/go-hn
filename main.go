@@ -28,6 +28,11 @@ type HNItem struct {
 	Descendants int
 }
 
+type Client struct {
+	BaseURL string
+	HTTPClient *http.Client
+}
+
 func main() {
 
 	isDebugPtr := flag.Bool("debug", false, "Display debug output")
@@ -38,35 +43,38 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	stories := getTopStories()
-	item := getItem(stories[1])
+	client := &Client{"https://hacker-news.firebaseio.com/v0", http.DefaultClient}
+
+	stories := GetTopStories(client)
+	item := client.GetItem(stories[0])
 
 	fmt.Printf("%d) %s (%s) -- %s\n", item.Id, item.Title, item.Url, time.Unix(item.TimeRaw, 0))
 }
 
-func getTopStories() []int {
+func GetTopStories(client *Client) []int {
 
 	var data []int
-	get("https://hacker-news.firebaseio.com/v0/topstories.json", &data)
+	client.get("/topstories.json", &data)
 
 	return data
 }
 
-func getItem(itemId int) (data *HNItem) {
+func (client *Client) GetItem(itemId int) (data *HNItem) {
 
-	itemUrl := fmt.Sprintf("https://hacker-news.firebaseio.com/v0/item/%d.json", itemId)
+	itemUrl := fmt.Sprintf("/item/%d.json", itemId)
 
 	data = new(HNItem)
-	get(itemUrl, data)
+	client.get(itemUrl, data)
 
 	return
 }
 
-func get(url string, data interface{}) {
+func (client *Client) get(uri string, data interface{}) {
 
-	log.Printf("Getting %s\n", url)
+	url := client.BaseURL + uri
+	log.Printf("GET %s\n", url)
 
-	resp, err := http.Get(url)
+	resp, err := client.HTTPClient.Get(url)
 	if err != nil {
 		panic(err)
 	}
@@ -75,15 +83,4 @@ func get(url string, data interface{}) {
 	if err := json.NewDecoder(resp.Body).Decode(data); err != nil {
 		panic(err)
 	}
-}
-
-func Size(a int) string {
-	switch {
-	case a < 0:
-		return "negative"
-	case a == 0:
-		return "zero"
-	}
-
-	return "small"
 }
