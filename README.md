@@ -11,5 +11,4 @@ go-hn --help
 
 ### Todo
 
-* Add unit tests for `lib/config`.
 * Extract output printing code from `main()` and unit test the output.

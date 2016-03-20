@@ -8,6 +8,7 @@ import (
 	"log"
 	"io/ioutil"
 	"github.com/alexgervais/go-hn/lib"
+	"flag"
 )
 
 type Config struct {
@@ -37,13 +38,24 @@ type Client struct {
 	HTTPClient *http.Client
 }
 
+var isDebugFlag bool
+var configFileLocationFlag string
+
+func init() {
+
+	flag.BoolVar(&isDebugFlag, "debug", false, "Display debug output")
+	flag.BoolVar(&isDebugFlag, "d", false, "")
+	flag.StringVar(&configFileLocationFlag, "config", "", "Configuration file location")
+	flag.Parse()
+}
+
 func main() {
 
-	config := lib.LoadConfig()
-	if !config.EnableDebug {
+	if !isDebugFlag {
 		log.SetFlags(0)
 		log.SetOutput(ioutil.Discard)
 	}
+	config := lib.LoadConfig(configFileLocationFlag)
 
 	client := &Client{config.BaseURL, http.DefaultClient}
 
